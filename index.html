@@ -104,7 +104,8 @@ input[type=file]{display:none}
 
 .account-area{display:flex;justify-content:flex-end;align-items:center;gap:10px;min-height:38px;margin:4px 0}
 .account-status{font-size:12px;color:var(--muted)}
-.account-button{width:38px;height:38px;border:1px solid var(--line);background:#fff;border-radius:50%;font-size:23px;cursor:pointer;color:var(--ink)}
+.account-button{width:38px;height:38px;border:1px solid var(--line);background:#fff;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:var(--ink)}
+.account-button svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .account-button:hover{border-color:var(--yellow);background:#e8f3ef}
 .account-modal{position:relative;padding-top:30px}
 .modal-close{position:absolute;right:12px;top:8px;border:0;background:transparent;font-size:28px;cursor:pointer;color:var(--muted)}
@@ -127,7 +128,7 @@ input[type=file]{display:none}
 <section id="home" class="page active">
   <div class="account-area">
     <span id="accountStatus" class="account-status">Публичный просмотр</span>
-    <button id="accountButton" class="account-button" type="button" aria-label="Вход администратора" title="Вход / регистрация">♙</button>
+    <button id="accountButton" class="account-button" type="button" aria-label="Вход администратора" title="Вход / регистрация"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.5" r="3.5"/><path d="M4.5 20c.7-4 3.3-6 7.5-6s6.8 2 7.5 6"/></svg></button>
   </div>
   <div class="eyebrow">Документация объекта</div>
   <h1>СПЕЦТРЕСТ<span>35</span></h1>
@@ -162,7 +163,7 @@ input[type=file]{display:none}
       <button id="showRegister" class="auth-tab" type="button">РЕГИСТРАЦИЯ</button>
     </div>
     <form id="loginForm" class="auth-form">
-      <label>Электронная почта (для входа)<input id="loginEmail" type="email" autocomplete="username" required placeholder="name@example.com"></label>
+      <label>Электронная почта (для входа)<input id="loginEmail" type="email" autocomplete="username" required placeholder="shuaybovyu@gmail.com"></label>
       <label>Пароль<input id="loginPassword" type="password" autocomplete="current-password" required placeholder="Ваш пароль"></label>
       <button class="auth-submit" type="submit">ВОЙТИ</button>
     </form>
@@ -191,7 +192,8 @@ input[type=file]{display:none}
 <script>
 const SUPABASE_URL = "https://bnkzmjfengqvismlzhhd.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_WOx-GDBh6GA6J1p7lCZq9g_jFqb0cSL";
-const ADMIN_EMAIL = "yusup35@yandex.ru";
+const ADMIN_EMAIL = "shuaybovyu@gmail.com";
+const SITE_URL = "https://yusas27.github.io/spectrest35/";
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const folders=[
  {name:"Согласованные схемы",icon:"scheme"},
@@ -263,7 +265,7 @@ $("registerForm").addEventListener("submit",async e=>{
   const email=$("registerEmail").value.trim().toLowerCase();
   const username=$("registerLogin").value.trim();
   const password=$("registerPassword").value;
-  const {error}=await sb.auth.signUp({email,password,options:{data:{username}}});
+  const {error}=await sb.auth.signUp({email,password,options:{data:{username},emailRedirectTo:SITE_URL}});
   if(error){authMessage("Регистрация не прошла: "+error.message);return}
   authMessage("Заявка создана. Подтверди электронную почту. Для просмотра документов регистрация не требуется.");
 });
