@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f4f3ee">
+<title>СПЕЦТРЕСТ 35 — Документация объекта</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#f4f3ee;--ink:#171819;--muted:#85857f;--line:#deddd6;--yellow:#008b6a;--white:#fff}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;color:var(--ink);font-family:Arial,Helvetica,sans-serif;background-color:var(--bg);background-image:linear-gradient(#e7e5de 1px,transparent 1px),linear-gradient(90deg,#e7e5de 1px,transparent 1px);background-size:49px 49px;min-height:100vh}
+.top-stripe{height:17px;background:repeating-linear-gradient( -55deg,#f4c62d 0 12px,#77766f 12px 24px);border-bottom:3px solid #d7d4ca}
+main{width:min(100% - 40px,820px);margin:0 auto;padding-top:0}
+.eyebrow{display:inline-block;background:var(--yellow);padding:9px 14px;font-size:12px;font-weight:800;letter-spacing:3px;text-transform:uppercase}
+h1{font-size:clamp(39px,7.5vw,62px);line-height:.96;letter-spacing:-2.5px;margin:20px 0 10px;font-weight:900}
+h1 span{display:inline;color:var(--yellow)}
+.lead{font-size:clamp(13px,1.8vw,16px);line-height:1.25;color:var(--muted);margin:0 0 26px;max-width:520px}
+.folder-list{display:grid;gap:18px}
+.folder{display:flex;align-items:center;gap:18px;background:var(--white);border:1px solid var(--line);border-left:6px solid var(--yellow);min-height:108px;padding:15px 19px;text-align:left;width:100%;cursor:pointer;color:inherit;transition:background .15s}
+.folder:hover,.folder:focus-visible{background:#f1f8f5;outline:2px solid var(--yellow);outline-offset:2px}
+.folder-icon{width:58px;height:58px;background:var(--yellow);display:grid;place-items:center;flex:none}
+.folder-icon svg{width:35px;height:35px;stroke:#171819;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.folder-copy{min-width:0;flex:1}
+.folder-num{font-size:15px;letter-spacing:2.5px;color:var(--muted);font-weight:700;margin-bottom:5px}
+.folder-name{font-size:clamp(17px,2.6vw,23px);font-weight:750;line-height:1.15}
+.folder-count{font-size:17px;color:var(--muted);margin-top:3px}
+.chevron{font-size:29px;color:var(--muted);font-weight:300}
+.add-card{margin-top:17px;width:100%;min-height:96px;background:transparent;border:3px dashed var(--ink);display:flex;align-items:center;gap:22px;padding:14px 19px;text-align:left;cursor:pointer;color:var(--ink)}
+.add-card:hover{background:#e8f3ef}
+.add-plus{width:58px;height:58px;background:var(--yellow);display:grid;place-items:center;font-size:39px;font-weight:300;flex:none}
+.add-title{font-size:21px;font-weight:750}.add-sub{font-size:17px;color:var(--muted);margin-top:3px}
+footer{text-align:center;color:var(--muted);font-size:16px;margin:75px 0 35px}
+.page{display:none}.page.active{display:block}
+.back{border:2px solid var(--yellow);border-radius:4px;padding:14px 22px;min-height:56px;min-width:132px;background:#fff;font-size:20px;font-weight:800;letter-spacing:.5px;cursor:pointer;color:var(--ink);margin-bottom:28px;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.section-heading{display:flex;align-items:baseline;gap:20px;margin-bottom:25px}
+.section-number{font-size:clamp(54px,10vw,84px);font-weight:300;color:transparent;-webkit-text-stroke:1.5px #aaa;line-height:1}
+h2{font-size:clamp(25px,4vw,36px);margin:0;letter-spacing:-1px}
+.file-list{background:#fff;border-left:7px solid var(--yellow);border-top:1px solid var(--line)}
+.file-row{display:flex;align-items:center;gap:17px;padding:17px 20px;border-bottom:1px solid var(--line);min-height:94px}
+.file-main{flex:1;min-width:0}
+.file-name{font-size:clamp(16px,2.5vw,22px);overflow-wrap:anywhere;line-height:1.25}
+.file-meta{font-size:16px;color:var(--muted);margin-top:6px}
+.file-actions{display:flex;gap:12px;flex:none}
+.icon-btn{width:54px;height:54px;border:1px solid var(--line);background:#fff;display:grid;place-items:center;cursor:pointer;color:var(--ink)}
+.icon-btn:hover{border-color:var(--yellow);background:#e8f3ef}
+.icon-btn svg{width:25px;height:25px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.preview-btn{width:54px;height:54px;border:1px solid var(--line);background:#fff;display:grid;place-items:center;cursor:pointer;flex:none}
+.preview-btn svg{width:25px;height:25px;stroke:currentColor;fill:none;stroke-width:2}
+.empty{padding:35px 20px;color:var(--muted);font-size:18px;text-align:center}
+.upload-btn{width:100%;margin-top:28px;border:3px solid var(--ink);background:transparent;padding:22px 12px;font-size:22px;font-weight:800;letter-spacing:1px;cursor:pointer}
+.upload-btn:hover{background:#e8f3ef}
+input[type=file]{display:none}
+.notice{margin-top:16px;color:var(--muted);font-size:14px;line-height:1.45}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
+.small-btn{border:1px solid var(--line);background:white;padding:10px 13px;cursor:pointer;font-weight:600}
+.small-btn:hover{border-color:var(--yellow)}
+.modal-backdrop{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:18px;z-index:10}
+.modal-backdrop.show{display:flex}
+.modal{width:min(100%,520px);background:var(--bg);padding:25px;border:1px solid var(--line);box-shadow:0 18px 60px #0003}
+.modal h3{font-size:25px;margin:0 0 15px}
+.modal p{color:var(--muted);line-height:1.5}
+.modal select{width:100%;padding:14px;border:1px solid var(--line);background:white;font-size:17px;margin:8px 0 16px}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px}
+.primary{background:var(--yellow);border:1px solid var(--yellow);padding:12px 18px;font-weight:800;cursor:pointer}
+.secondary{background:white;border:1px solid var(--line);padding:12px 18px;cursor:pointer}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#172126;color:#fff;padding:13px 18px;border-radius:30px;display:none;z-index:20;font-size:14px;max-width:90%;text-align:center}
+@media(max-width:600px){
+ .back{min-height:60px;min-width:148px;padding:16px 24px;font-size:21px;margin-bottom:26px}
+ main{width:calc(100% - 28px);margin-top:0;padding-top:0}
+ .eyebrow{font-size:12px;padding:10px 13px;letter-spacing:2px}
+ h1{margin-top:18px;letter-spacing:-1.8px}
+ .lead{margin-top:0;margin-bottom:20px}
+ .folder{min-height:94px;padding:12px 12px;gap:12px}
+ .folder-icon,.add-plus{width:52px;height:52px}
+ .folder-icon svg{width:31px;height:31px}
+ .folder-num{font-size:13px}.folder-count{font-size:15px}
+ .add-card{min-height:84px;padding:12px;gap:12px}
+ .add-title{font-size:18px}.add-sub{font-size:14px}
+ footer{margin-top:55px}
+ .file-row{gap:10px;padding:13px 10px;min-height:82px}
+ .file-actions{gap:7px}.icon-btn,.preview-btn{width:44px;height:44px}
+ .file-meta{font-size:14px}
+ .section-heading{gap:13px}
+}
+
+.auth-tabs{display:flex;border-bottom:1px solid var(--line);margin:18px 0 20px}
+.auth-tab{flex:1;padding:14px 8px;border:0;border-bottom:3px solid transparent;background:transparent;font-weight:800;cursor:pointer}
+.auth-tab.active{border-bottom-color:var(--yellow)}
+.auth-form label{display:block;font-weight:700;font-size:14px;margin:14px 0}
+.auth-form input{display:block;width:100%;margin-top:7px;padding:14px;border:1px solid var(--line);font-size:16px;background:#fff}
+.auth-submit{width:100%;padding:16px 12px;background:var(--yellow);border:1px solid var(--yellow);font-weight:900;font-size:16px;cursor:pointer;margin-top:8px}
+.auth-hint,.auth-message{font-size:14px;line-height:1.45;color:var(--muted)}
+.auth-message{min-height:20px;margin-bottom:0}
+.admin-panel{background:#fff;border:1px solid var(--line);border-left:6px solid var(--yellow);padding:16px;margin:20px 0}
+.admin-panel h3{margin:0 0 12px}
+.admin-user{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid var(--line);padding:12px 0}
+.admin-user button{padding:10px 12px;border:1px solid var(--line);background:#fff;cursor:pointer;font-weight:700}
+.user-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 22px;font-size:14px;color:var(--muted);flex-wrap:wrap}
+.user-bar button{padding:10px 14px;border:1px solid var(--line);background:#fff;cursor:pointer;font-weight:700}
+
+
+
+.account-area{display:flex;justify-content:flex-end;align-items:center;gap:10px;min-height:38px;margin:4px 0}
+.account-status{font-size:12px;color:var(--muted)}
+.account-button{width:38px;height:38px;border:1px solid var(--line);background:#fff;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:var(--ink)}
+.account-button svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.account-button:hover{border-color:var(--yellow);background:#e8f3ef}
+.account-modal{position:relative;padding-top:30px}
+.modal-close{position:absolute;right:12px;top:8px;border:0;background:transparent;font-size:28px;cursor:pointer;color:var(--muted)}
+.auth-tabs{display:flex;border-bottom:1px solid var(--line);margin:18px 0 20px}
+.auth-tab{flex:1;padding:14px 8px;border:0;border-bottom:3px solid transparent;background:transparent;font-weight:800;cursor:pointer}
+.auth-tab.active{border-bottom-color:var(--yellow)}
+.auth-form label{display:block;font-weight:700;font-size:14px;margin:14px 0}
+.auth-form input{display:block;width:100%;margin-top:7px;padding:14px;border:1px solid var(--line);font-size:16px;background:#fff}
+.auth-submit{width:100%;padding:16px 12px;background:var(--yellow);border:1px solid var(--yellow);font-weight:900;font-size:16px;cursor:pointer;margin-top:8px}
+.auth-hint,.auth-message{font-size:14px;line-height:1.45;color:var(--muted)}
+.auth-message{min-height:20px;margin-bottom:0}
+.logout-button{margin-top:12px}
+@media(max-width:600px){.account-area{margin-top:2px}.account-status{font-size:11px}}
+
+</style>
+</head>
+<body>
+
+<main id="appMain">
+<section id="home" class="page active">
+  <div class="account-area">
+    <span id="accountStatus" class="account-status">Публичный просмотр</span>
+    <button id="accountButton" class="account-button" type="button" aria-label="Вход администратора" title="Вход / регистрация"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.5" r="3.5"/><path d="M4.5 20c.7-4 3.3-6 7.5-6s6.8 2 7.5 6"/></svg></button>
+  </div>
+  <div class="eyebrow">Документация объекта</div>
+  <h1>СПЕЦТРЕСТ<span>35</span></h1>
+  <p class="lead">Всё, что нужно на объекте, — в одном месте и под рукой.</p>
+  <div class="folder-list" id="folderList">
+    <button class="folder" data-folder="0"><span class="folder-icon"><svg viewBox="0 0 54 54"><rect x="7" y="7" width="34" height="34" rx="2"/><circle cx="15" cy="15" r="3"/><circle cx="33" cy="33" r="3"/><path d="M18 15h8v10h7v5"/></svg></span><span class="folder-copy"><span class="folder-num">01</span><br><span class="folder-name">Согласованные схемы</span><div class="folder-count">0 файлов</div></span><span class="chevron">›</span></button>
+    <button class="folder" data-folder="1"><span class="folder-icon"><svg viewBox="0 0 54 54"><path d="M8 5v38h38L8 5Z"/><path d="M8 16h9M8 25h9M8 34h9M17 25v-5M26 34v-5M35 43v-5"/></svg></span><span class="folder-copy"><span class="folder-num">02</span><br><span class="folder-name">Проекты и чертежи</span><div class="folder-count">0 файлов</div></span><span class="chevron">›</span></button>
+    <button class="folder" data-folder="2"><span class="folder-icon"><svg viewBox="0 0 54 54"><path d="M13 5h18l11 11v29H13z"/><path d="M31 5v12h11M19 30l6 6 12-13"/></svg></span><span class="folder-copy"><span class="folder-num">03</span><br><span class="folder-name">Акты необходимости</span><div class="folder-count">0 файлов</div></span><span class="chevron">›</span></button>
+    <button class="folder" data-folder="3"><span class="folder-icon"><svg viewBox="0 0 54 54"><path d="M7 34h40M11 31a16 16 0 0 1 32 0M27 15v16M5 39h44"/></svg></span><span class="folder-copy"><span class="folder-num">04</span><br><span class="folder-name">Нужные файлы</span><div class="folder-count">0 файлов</div></span><span class="chevron">›</span></button>
+  </div>
+  <button class="add-card" id="addHome">
+    <span class="add-plus">+</span><span><span class="add-title">Добавить файл</span><br><span class="add-sub">Выбрать раздел и загрузить</span></span><span class="chevron">›</span>
+  </button>
+  <footer>© Спецтрест 35</footer>
+</section>
+<section id="folderPage" class="page">
+  <button class="back" id="back">← НАЗАД</button>
+  <div class="section-heading"><div class="section-number" id="sectionNumber">01</div><h2 id="sectionTitle">Согласованные схемы</h2></div>
+  <div class="file-list" id="fileList"></div>
+  <button class="upload-btn" id="uploadCurrent">+ ДОБАВИТЬ ФАЙЛЫ</button>
+  <div class="notice">Можно выбрать сразу несколько файлов. Файлы сохраняются в общем хранилище организации и доступны сотрудникам.</div>
+  <footer>© Спецтрест 35</footer>
+</section>
+</main>
+<div class="modal-backdrop" id="accountModal" role="dialog" aria-modal="true" aria-labelledby="accountTitle">
+  <div class="modal account-modal">
+    <button id="closeAccount" class="modal-close" type="button" aria-label="Закрыть">×</button>
+    <h3 id="accountTitle">Управление сайтом</h3>
+    <p>Документы доступны всем посетителям. Вход нужен только администратору для добавления и удаления файлов.</p>
+    <div class="auth-tabs">
+      <button id="showLogin" class="auth-tab active" type="button">ВОЙТИ</button>
+      <button id="showRegister" class="auth-tab" type="button">РЕГИСТРАЦИЯ</button>
+    </div>
+    <form id="loginForm" class="auth-form">
+      <label>Электронная почта (для входа)<input id="loginEmail" type="email" autocomplete="username" required placeholder="yusupmkb@yandex.ru"></label>
+      <label>Пароль<input id="loginPassword" type="password" autocomplete="current-password" required placeholder="Ваш пароль"></label>
+      <button class="auth-submit" type="submit">ВОЙТИ</button>
+    </form>
+    <form id="registerForm" class="auth-form" hidden>
+      <label>Имя пользователя<input id="registerLogin" type="text" maxlength="40" required value="Yusup" placeholder="Yusup"></label>
+      <label>Электронная почта<input id="registerEmail" type="email" autocomplete="email" required placeholder="name@example.com"></label>
+      <label>Пароль<input id="registerPassword" type="password" minlength="8" autocomplete="new-password" required placeholder="Минимум 8 символов"></label>
+      <button class="auth-submit" type="submit">ОТПРАВИТЬ ЗАЯВКУ</button>
+      <p class="auth-hint">Регистрация не нужна для просмотра и скачивания документов. Новая учётная запись не получает права администратора.</p>
+    </form>
+    <p id="authMessage" class="auth-message" role="status"></p>
+    <button id="logoutBtn" class="small-btn logout-button" type="button" hidden>ВЫЙТИ</button>
+  </div>
+</div>
+<input id="fileInput" type="file" multiple>
+<div class="modal-backdrop" id="modal">
+ <div class="modal">
+  <h3>Добавить файлы</h3>
+  <p>Выберите раздел, в который нужно загрузить документы. Можно выбрать сразу несколько файлов.</p>
+  <select id="folderSelect"></select>
+  <div class="modal-actions"><button class="secondary" id="cancelModal">Отмена</button><button class="primary" id="chooseFiles">Выбрать файлы</button></div>
+ </div>
+</div>
+<div id="toast"></div>
+
+<script>
+const SUPABASE_URL = "https://bnkzmjfengqvismlzhhd.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_WOx-GDBh6GA6J1p7lCZq9g_jFqb0cSL";
+const ADMIN_EMAIL = "yusupmkb@yandex.ru";
+const SITE_URL = "https://yusas27.github.io/spectrest35/";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const folders=[
+ {name:"Согласованные схемы",icon:"scheme"},
+ {name:"Проекты и чертежи",icon:"ruler"},
+ {name:"Акты необходимости",icon:"file"},
+ {name:"Нужные файлы",icon:"helmet"}
+];
+let currentFolder=0, currentUser=null, isAdmin=false;
+const $=id=>document.getElementById(id);
+function icon(type){
+ const paths={
+ scheme:'<rect x="7" y="7" width="34" height="34" rx="2"/><circle cx="15" cy="15" r="3"/><circle cx="33" cy="33" r="3"/><path d="M18 15h8v10h7v5"/>',
+ ruler:'<path d="M8 5v38h38L8 5Z"/><path d="M8 16h9M8 25h9M8 34h9M17 25v-5M26 34v-5M35 43v-5"/>',
+ file:'<path d="M13 5h18l11 11v29H13z"/><path d="M31 5v12h11M19 30l6 6 12-13"/>',
+ helmet:'<path d="M7 34h40M11 31a16 16 0 0 1 32 0M27 15v16M5 39h44"/>'
+ };
+ return `<svg viewBox="0 0 54 54" aria-hidden="true">${paths[type]}</svg>`;
+}
+function toast(msg){$("toast").textContent=msg;$("toast").style.display="block";setTimeout(()=>$("toast").style.display="none",3200)}
+function authMessage(msg){$("authMessage").textContent=msg}
+function openAccount(){$("accountModal").classList.add("show");authMessage("")}
+function closeAccount(){$("accountModal").classList.remove("show")}
+function setAuthTab(tab){
+  const login=tab==="login";
+  $("loginForm").hidden=!login;$("registerForm").hidden=login;
+  $("showLogin").classList.toggle("active",login);$("showRegister").classList.toggle("active",!login);
+  authMessage("");
+}
+$("accountButton").onclick=openAccount;
+$("closeAccount").onclick=closeAccount;
+$("accountModal").addEventListener("click",e=>{if(e.target===$("accountModal"))closeAccount()});
+$("showLogin").onclick=()=>setAuthTab("login");
+$("showRegister").onclick=()=>setAuthTab("register");
+
+async function refreshAdminState(){
+  const {data:{session}}=await sb.auth.getSession();
+  currentUser=session?.user||null;
+  isAdmin=false;
+  if(currentUser){
+    const {data:profile,error}=await sb.from("profiles").select("approved,username,role").eq("id",currentUser.id).maybeSingle();
+    if(!error && profile && profile.role==="admin" && (currentUser.email||"").toLowerCase()===ADMIN_EMAIL.toLowerCase()){
+      isAdmin=true;
+      $("accountStatus").textContent="Администратор";
+      authMessage("Вы вошли как администратор: Yusup.");
+      $("showRegister").hidden=true;
+    }else{
+      $("accountStatus").textContent="Публичный просмотр";
+      $("showRegister").hidden=false;
+      authMessage(error ? "Не удалось проверить права администратора." : "Вход выполнен, но права администратора не назначены.");
+    }
+    $("logoutBtn").hidden=false;
+  }else{
+    $("accountStatus").textContent="Публичный просмотр";
+    $("logoutBtn").hidden=true;
+    $("showRegister").hidden=false;
+  }
+  $("addHome").style.display=isAdmin?"flex":"none";
+  $("uploadCurrent").style.display=isAdmin?"block":"none";
+  if($("folderPage").classList.contains("active")) await renderFiles();
+}
+$("loginForm").addEventListener("submit",async e=>{
+  e.preventDefault();authMessage("Выполняется вход…");
+  const {error}=await sb.auth.signInWithPassword({email:$("loginEmail").value.trim(),password:$("loginPassword").value});
+  if(error){authMessage("Не удалось войти: "+error.message);return}
+  await refreshAdminState();await renderHome();
+});
+$("registerForm").addEventListener("submit",async e=>{
+  e.preventDefault();authMessage("Отправляем заявку…");
+  const email=$("registerEmail").value.trim().toLowerCase();
+  const username=$("registerLogin").value.trim();
+  const password=$("registerPassword").value;
+  const {error}=await sb.auth.signUp({email,password,options:{data:{username},emailRedirectTo:SITE_URL}});
+  if(error){authMessage("Регистрация не прошла: "+error.message);return}
+  authMessage("Заявка создана. Подтверди электронную почту. Для просмотра документов регистрация не требуется.");
+});
+$("logoutBtn").onclick=async()=>{
+  await sb.auth.signOut();await refreshAdminState();await renderHome();
+  authMessage("Вы вышли. Просмотр документов остаётся доступен всем.");
+};
+function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function fmtSize(bytes){if(bytes<1024)return bytes+" Б";if(bytes<1048576)return (bytes/1024).toFixed(1)+" КБ";return (bytes/1048576).toFixed(1)+" МБ"}
+// Делегирование кликов назначается один раз и не зависит от ответа Supabase.
+$("folderList").addEventListener("click",e=>{
+ const button=e.target.closest("[data-folder]");
+ if(button) showFolder(Number(button.dataset.folder));
+});
+async function renderHome(){
+ $("addHome").style.display=isAdmin?"flex":"none";
+ const {data:docs,error}=await sb.from("documents").select("folder").limit(1000);
+ if(error){
+   // Навигация по разделам всё равно работает, даже если список документов временно недоступен.
+   $("folderList").querySelectorAll(".folder-count").forEach(el=>el.textContent="");
+   toast("Разделы доступны, но список файлов пока не загружен. Проверь права чтения Supabase.");
+   console.error("documents SELECT failed:",error);
+   return;
+ }
+ $("folderList").innerHTML=folders.map((f,i)=>`<button class="folder" data-folder="${i}"><span class="folder-icon">${icon(f.icon)}</span><span class="folder-copy"><span class="folder-num">0${i+1}</span><br><span class="folder-name">${f.name}</span><div class="folder-count">${docs.filter(d=>d.folder===i).length} ${plural(docs.filter(d=>d.folder===i).length)}</div></span><span class="chevron">›</span></button>`).join("");
+}
+function plural(n){if(n%10===1&&n%100!==11)return "файл";if([2,3,4].includes(n%10)&&![12,13,14].includes(n%100))return "файла";return "файлов"}
+async function showFolder(i){
+ currentFolder=i;$("home").classList.remove("active");$("folderPage").classList.add("active");
+ $("sectionNumber").textContent="0"+(i+1);$("sectionTitle").textContent=folders[i].name;
+ $("uploadCurrent").style.display=isAdmin?"block":"none";
+ await renderFiles();window.scrollTo(0,0);
+}
+async function renderFiles(){
+ const {data:docs,error}=await sb.from("documents").select("*").eq("folder",currentFolder).order("created_at",{ascending:false});
+ if(error){
+   console.error("documents list failed:",error);
+   $("fileList").innerHTML='<div class="empty">Не удалось загрузить документы. Проверь публичные права чтения в Supabase.</div>';
+   return;
+ }
+ if(!docs.length){$("fileList").innerHTML='<div class="empty">В этом разделе пока нет файлов</div>';return}
+ $("fileList").innerHTML=docs.map(d=>`<div class="file-row">
+ <button class="preview-btn" title="Открыть файл" data-open="${d.id}"><svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+ <div class="file-main"><div class="file-name">${escapeHtml(d.name)}</div><div class="file-meta">${escapeHtml((d.type||"Файл").toUpperCase())} · ${fmtSize(d.size)}</div></div>
+ <div class="file-actions"><button class="icon-btn" title="Скачать файл" data-download="${d.id}"><svg viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 20h16"/></svg></button>${isAdmin?`<button class="icon-btn" title="Удалить файл" data-delete="${d.id}"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6m4-6v6M6 7l1 14h10l1-14M9 7V4h6v3"/></svg></button>`:""}</div></div>`).join("");
+ document.querySelectorAll("[data-download]").forEach(b=>b.onclick=()=>downloadDoc(b.dataset.download));
+ document.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>openDoc(b.dataset.open));
+ document.querySelectorAll("[data-delete]").forEach(b=>b.onclick=()=>deleteDoc(b.dataset.delete));
+}
+function publicUrl(path){
+  const {data}=sb.storage.from("documents").getPublicUrl(path);
+  return data.publicUrl;
+}
+async function downloadDoc(id){
+  const {data,error}=await sb.from("documents").select("*").eq("id",id).single();
+  if(error){toast("Файл не найден");return}
+  try{
+    const response=await fetch(publicUrl(data.path));
+    if(!response.ok)throw new Error("Download failed");
+    const blob=await response.blob(),url=URL.createObjectURL(blob);
+    const a=document.createElement("a");a.href=url;a.download=data.name;document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1500);
+  }catch(e){window.open(publicUrl(data.path),"_blank","noopener")}
+}
+async function openDoc(id){
+  const {data,error}=await sb.from("documents").select("*").eq("id",id).single();
+  if(error){toast("Файл не найден");return}
+  window.open(publicUrl(data.path),"_blank","noopener");
+}
+async function deleteDoc(id){
+ if(!isAdmin||!confirm("Удалить этот файл?"))return;
+ const {data,error}=await sb.from("documents").select("path").eq("id",id).single();
+ if(error){toast("Файл не найден");return}
+ const storage=await sb.storage.from("documents").remove([data.path]);
+ if(storage.error){toast("Не удалось удалить файл");return}
+ const result=await sb.from("documents").delete().eq("id",id);
+ if(result.error){toast("Не удалось удалить запись");return}
+ await renderFiles();await renderHome();toast("Файл удалён");
+}
+function chooseUpload(){if(!isAdmin)return;$("fileInput").click()}
+$("addHome").onclick=()=>{if(!isAdmin)return;const pick=prompt("Введите номер раздела: 1 — Согласованные схемы, 2 — Проекты и чертежи, 3 — Акты необходимости, 4 — Нужные файлы");const n=Number(pick);if(n>=1&&n<=4){uploadFolder=n-1;$("fileInput").click()}};
+let uploadFolder=0;
+$("uploadCurrent").onclick=()=>{uploadFolder=currentFolder;chooseUpload()};
+$("back").onclick=()=>{$("folderPage").classList.remove("active");$("home").classList.add("active");renderHome();window.scrollTo(0,0)};
+$("fileInput").addEventListener("change",async e=>{
+ if(!isAdmin){e.target.value="";return}
+ const files=Array.from(e.target.files||[]);if(!files.length)return;
+ let done=0;
+ for(const f of files){
+  const safeName=f.name.replace(/[^\w.\-() а-яА-ЯёЁ]/g,"_");
+  const path=`${currentUser.id}/${Date.now()}_${Math.random().toString(36).slice(2)}_${safeName}`;
+  const up=await sb.storage.from("documents").upload(path,f,{upsert:false});
+  if(up.error){console.error(up.error);continue}
+  const row=await sb.from("documents").insert({folder:uploadFolder,name:f.name,path,size:f.size,type:f.type||"application/octet-stream"});
+  if(row.error){await sb.storage.from("documents").remove([path]);console.error(row.error);continue}
+  done++;
+ }
+ e.target.value="";
+ await renderHome();if($("folderPage").classList.contains("active")&&currentFolder===uploadFolder)await renderFiles();
+ toast(`Загружено файлов: ${done}`);
+});
+(async()=>{
+  await renderHome();
+  await refreshAdminState();
+  sb.auth.onAuthStateChange(async()=>{
+    await refreshAdminState();
+    await renderHome();
+  });
+})();
+</script>
+
+</body>
+</html>
