@@ -140,7 +140,7 @@ input[type=file]{display:none}
     <button class="folder" data-folder="3"><span class="folder-icon"><svg viewBox="0 0 54 54"><path d="M7 34h40M11 31a16 16 0 0 1 32 0M27 15v16M5 39h44"/></svg></span><span class="folder-copy"><span class="folder-num">04</span><br><span class="folder-name">Нужные файлы</span><div class="folder-count">0 файлов</div></span><span class="chevron">›</span></button>
   </div>
   <button class="add-card" id="addHome">
-    <span class="add-plus">+</span><span><span class="add-title">Добавить файл</span><br><span class="add-sub">Выбрать раздел и загрузить</span></span><span class="chevron">›</span>
+    <span class="add-plus">+</span><span><span class="add-title">Добавить файлы</span><br><span class="add-sub">Доступно всем сотрудникам — выберите раздел</span></span><span class="chevron">›</span>
   </button>
   <footer>© Спецтрест 35</footer>
 </section>
@@ -149,7 +149,7 @@ input[type=file]{display:none}
   <div class="section-heading"><div class="section-number" id="sectionNumber">01</div><h2 id="sectionTitle">Согласованные схемы</h2></div>
   <div class="file-list" id="fileList"></div>
   <button class="upload-btn" id="uploadCurrent">+ ДОБАВИТЬ ФАЙЛЫ</button>
-  <div class="notice">Можно выбрать сразу несколько файлов. Файлы сохраняются в общем хранилище организации и доступны сотрудникам.</div>
+  <div class="notice">Загружать документы могут все посетители без входа. За один раз — до 20 файлов, размер каждого — до 25 МБ. Удаление доступно только администратору.</div>
   <footer>© Спецтрест 35</footer>
 </section>
 </main>
@@ -250,8 +250,8 @@ async function refreshAdminState(){
     $("logoutBtn").hidden=true;
     $("showRegister").hidden=false;
   }
-  $("addHome").style.display=isAdmin?"flex":"none";
-  $("uploadCurrent").style.display=isAdmin?"block":"none";
+  $("addHome").style.display="flex";
+  $("uploadCurrent").style.display="block";
   if($("folderPage").classList.contains("active")) await renderFiles();
 }
 $("loginForm").addEventListener("submit",async e=>{
@@ -281,7 +281,7 @@ $("folderList").addEventListener("click",e=>{
  if(button) showFolder(Number(button.dataset.folder));
 });
 async function renderHome(){
- $("addHome").style.display=isAdmin?"flex":"none";
+ $("addHome").style.display="flex";
  const {data:docs,error}=await sb.from("documents").select("folder").limit(1000);
  if(error){
    // Навигация по разделам всё равно работает, даже если список документов временно недоступен.
@@ -296,7 +296,7 @@ function plural(n){if(n%10===1&&n%100!==11)return "файл";if([2,3,4].includes
 async function showFolder(i){
  currentFolder=i;$("home").classList.remove("active");$("folderPage").classList.add("active");
  $("sectionNumber").textContent="0"+(i+1);$("sectionTitle").textContent=folders[i].name;
- $("uploadCurrent").style.display=isAdmin?"block":"none";
+ $("uploadCurrent").style.display="block";
  await renderFiles();window.scrollTo(0,0);
 }
 async function renderFiles(){
@@ -345,27 +345,30 @@ async function deleteDoc(id){
  if(result.error){toast("Не удалось удалить запись");return}
  await renderFiles();await renderHome();toast("Файл удалён");
 }
-function chooseUpload(){if(!isAdmin)return;$("fileInput").click()}
-$("addHome").onclick=()=>{if(!isAdmin)return;const pick=prompt("Введите номер раздела: 1 — Согласованные схемы, 2 — Проекты и чертежи, 3 — Акты необходимости, 4 — Нужные файлы");const n=Number(pick);if(n>=1&&n<=4){uploadFolder=n-1;$("fileInput").click()}};
+function chooseUpload(){$("fileInput").click()}
+$("addHome").onclick=()=>{const pick=prompt("Введите номер раздела: 1 — Согласованные схемы, 2 — Проекты и чертежи, 3 — Акты необходимости, 4 — Нужные файлы");const n=Number(pick);if(n>=1&&n<=4){uploadFolder=n-1;$("fileInput").click()}};
 let uploadFolder=0;
 $("uploadCurrent").onclick=()=>{uploadFolder=currentFolder;chooseUpload()};
 $("back").onclick=()=>{$("folderPage").classList.remove("active");$("home").classList.add("active");renderHome();window.scrollTo(0,0)};
 $("fileInput").addEventListener("change",async e=>{
- if(!isAdmin){e.target.value="";return}
  const files=Array.from(e.target.files||[]);if(!files.length)return;
- let done=0;
+ if(files.length>20){toast("За один раз можно загрузить не более 20 файлов.");e.target.value="";return}
+ const tooLarge=files.find(f=>f.size>25*1024*1024);
+ if(tooLarge){toast("Файл «"+tooLarge.name+"» больше 25 МБ. Уменьши его размер.");e.target.value="";return}
+ let done=0,failed=0;
  for(const f of files){
   const safeName=f.name.replace(/[^\w.\-() а-яА-ЯёЁ]/g,"_");
-  const path=`${currentUser.id}/${Date.now()}_${Math.random().toString(36).slice(2)}_${safeName}`;
+  const randomPart=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():Math.random().toString(36).slice(2);
+  const path=`public/${Date.now()}_${randomPart}_${safeName}`;
   const up=await sb.storage.from("documents").upload(path,f,{upsert:false});
-  if(up.error){console.error(up.error);continue}
+  if(up.error){console.error(up.error);failed++;continue}
   const row=await sb.from("documents").insert({folder:uploadFolder,name:f.name,path,size:f.size,type:f.type||"application/octet-stream"});
-  if(row.error){await sb.storage.from("documents").remove([path]);console.error(row.error);continue}
+  if(row.error){await sb.storage.from("documents").remove([path]);console.error(row.error);failed++;continue}
   done++;
  }
  e.target.value="";
  await renderHome();if($("folderPage").classList.contains("active")&&currentFolder===uploadFolder)await renderFiles();
- toast(`Загружено файлов: ${done}`);
+ toast(`Загружено: ${done}. Ошибок: ${failed}.`);
 });
 (async()=>{
   await renderHome();
